@@ -30,18 +30,23 @@ html
 
             function onSelectedSafety() {
                 const isOn = getCookie("2SAFETY-OFF")
-                if (isOn === "true") {
+                console.log("isOn", isOn);
+                if (isOn === "true" || isOn === "") {
                     setCookie("2SAFETY-OFF", "false")
                 } else {
                     setCookie("2SAFETY-OFF", "true")
                 }
-                setCookie("UPDATE", "TRUE")
                 location.reload()
             }
 
         div
           input(type="checkbox" onclick="onSelectedSafety()" name="safety" checked=safetyOff)
           label(for="safety") Ranjivost uključena
+
+          p
+           b Upute:
+           span Ako je ranjivost uključena, preko žice se šalju podatci 'oib' i 'dateOfBirth', koji su osljetljive informacije. Također, ako je ranjivost uključena, izbor informacije se čita iz datoteke spremljene kao obični tekst, tj. kao neenkodirani tekst.
+           | Ako je ranjivost isključena, osjetljivi podatci se ne šalju, a kao izvor informacije se koristi datoteka koja je enkriptirana algoritmom 'aes-256-cbc' i snažnom generiranom zaporkom.
 
         #data
           if data

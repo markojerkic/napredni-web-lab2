@@ -177,3 +177,5 @@ dist
 data.json
 data2.json
 is-encripted.json
+data2-safe.json
+data2-unsafe.json

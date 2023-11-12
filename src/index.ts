@@ -31,12 +31,13 @@ const readImageData = () => {
     }
 }
 
-const readSensitiveData = () => {
-    if (!fs.existsSync("data2.json")) {
+const readSensitiveData = (unsafe: boolean): string => {
+    if (!fs.existsSync("data2-safe.json") || !fs.existsSync("data2-unsafe.json")) {
         console.error("No data2.json at root");
-        return null;
+        writeEncrypted()
+        return readSensitiveData(unsafe);
     }
-    const data = fs.readFileSync("data2.json")
+    const data = fs.readFileSync(`data2-${unsafe ? 'unsafe' : 'safe'}.json`)
     return data.toString();
 }
 
@@ -65,25 +66,58 @@ const algorithm = 'aes-256-cbc'; //Using AES encryption
 const key = crypto.randomBytes(32);
 const iv = crypto.randomBytes(16);
 
-//Encrypting text
-function encrypt(text: string) {
-    let cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv);
-    let encrypted = cipher.update(text);
-    encrypted = Buffer.concat([encrypted, cipher.final()]);
-    return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') };
-}
+{/* //Encrypting text */ }
+{/* function encrypt(text: string) { */ }
+{/*     let cipher = crypto.createCipheriv(algorithm, Buffer.from(key), iv); */ }
+{/*     let encrypted = cipher.update(text); */ }
+{/*     encrypted = Buffer.concat([encrypted, cipher.final()]); */ }
+{/*     return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') }; */ }
+{/* } */ }
+{/**/ }
+{/* // Decrypting text */ }
+{/* function decrypt(text: ReturnType<typeof encrypt>) { */ }
+{/*     let iv = Buffer.from(text.iv, 'hex'); */ }
+{/*     let encryptedText = Buffer.from(text.encryptedData, 'hex'); */ }
+{/*     let decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv); */ }
+{/*     let decrypted = decipher.update(encryptedText); */ }
+{/*     decrypted = Buffer.concat([decrypted, decipher.final()]); */ }
+{/*     return decrypted.toString(); */ }
+{/* } */ }
+{/**/ }
 
-// Decrypting text
-function decrypt(text: ReturnType<typeof encrypt>) {
-    let iv = Buffer.from(text.iv, 'hex');
-    let encryptedText = Buffer.from(text.encryptedData, 'hex');
-    let decipher = crypto.createDecipheriv(algorithm, Buffer.from(key), iv);
-    let decrypted = decipher.update(encryptedText);
-    decrypted = Buffer.concat([decrypted, decipher.final()]);
-    return decrypted.toString();
-}
+const encrypt = (plainText: string, password: string) => {
+    try {
+        const iv = crypto.randomBytes(16);
+        const key = crypto.createHash('sha256').update(password).digest('base64').substr(0, 32);
+        const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
 
-function writeEncrypted(encripted: boolean) {
+        let encrypted = cipher.update(plainText);
+        encrypted = Buffer.concat([encrypted, cipher.final()])
+        return iv.toString('hex') + ':' + encrypted.toString('hex');
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+const decrypt = (encryptedText: string, password: string) => {
+    try {
+        const textParts = encryptedText.split(':');
+        const iv = Buffer.from(textParts.shift()!, 'hex');
+
+        const encryptedData = Buffer.from(textParts.join(':'), 'hex');
+        const key = crypto.createHash('sha256').update(password).digest('base64').substr(0, 32);
+        const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+
+        const decrypted = decipher.update(encryptedData);
+        const decryptedText = Buffer.concat([decrypted, decipher.final()]);
+        return decryptedText.toString();
+    } catch (error) {
+        console.log(error)
+    }
+}
+const STRONG_PASS = `C&3r(]}Pa>N^9TD*"/t)J<`;
+
+function writeEncrypted() {
     const rawData = `[
               {
                 "key": "oib",
@@ -103,63 +137,23 @@ function writeEncrypted(encripted: boolean) {
               }
             ]`;
 
-    if (encripted) {
-        const encriptedData = encrypt(rawData)
+    const encriptedData = encrypt(rawData, STRONG_PASS)!;
 
-        fs.writeFileSync("data2.json", JSON.stringify(encriptedData))
-    } else {
-        fs.writeFileSync("data2.json", rawData)
-    }
-}
-
-const sensitiveDataIsEncripted = () => {
-    if (!fs.existsSync("is-encripted.json")) {
-        return false;
-    }
-
-    return JSON.parse(fs.readFileSync("is-encripted.json").toString()) as boolean
-}
-
-const writeIsSensitiveDataEncripted = (isEnc: boolean) => {
-    fs.writeFileSync("is-encripted.json", JSON.stringify(isEnc));
+    fs.writeFileSync("data2-safe.json", encriptedData)
+    fs.writeFileSync("data2-unsafe.json", rawData)
 }
 
 
 app.get("/drugi", async (req, res) => {
-    const rawData = readSensitiveData();
-    let unsafe = !!req.cookies ? req.cookies["2SAFETY-OFF"] === "true" : false;
-    if (!req.cookies["2SAFETY-OFF"]) {
-        if (rawData) {
-            unsafe = !sensitiveDataIsEncripted();
-            console.log("ima podataka", unsafe)
-        } else {
-            writeEncrypted(true);
-            writeIsSensitiveDataEncripted(true);
-            unsafe = true;
-        }
-        res.cookie("2SAFETY-OFF", JSON.stringify(unsafe));
-    }
-    console.log("provjera unsafe", unsafe)
-
-
-    if (req.cookies["UPDATE"] === "true") {
-        writeEncrypted(!unsafe)
-
-        res.clearCookie("UPDATE")
-    }
-
-    console.log("rawData", rawData)
+    let unsafe = !!req.cookies ? (req.cookies["2SAFETY-OFF"] === "true" || !req.cookies["2SAFETY-OFF"]) : false;
+    const rawData = readSensitiveData(unsafe);
 
     if (rawData) {
-        console.log("unsafe", unsafe)
-        let data = unsafe ? JSON.parse(rawData) : JSON.parse(decrypt(JSON.parse(rawData) as ReturnType<typeof encrypt>));
+        let data = unsafe ? JSON.parse(rawData) : JSON.parse(decrypt(rawData, STRONG_PASS)!);
 
         if (!unsafe) {
-            delete data.oib
-            delete data.dateOfBirth
+            data = data.filter((d: {key: string, value: string}) => d.key !== "oib" && d.key !== "dateOfBirth");
         }
-
-        console.log("data", data)
 
         return res.render("drugi.pug", {
             data,
