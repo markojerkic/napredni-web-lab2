@@ -46,7 +46,7 @@ app.post("/prvi", async (req, res) => {
     const data = req.body;
     const unsafe = !!req.cookies ? (req.cookies["SAFETY-OFF"] === "true" || !req.cookies["SAFETY-OFF"]) : false;
 
-    let saveData = unsafe ? JSON.stringify(data) : JSON.stringify(sanitizeHtml(data));
+    let saveData = JSON.stringify(data);
 
     fs.writeFileSync("data.json", saveData);
     return res.redirect("/prvi");

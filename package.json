@@ -9,12 +9,12 @@
     "generate": "drizzle-kit generate:pg"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.6",
     "@types/express": "^4.17.20",
     "@types/node": "^20.8.9",
     "@types/pug": "^2.0.8",
     "@types/sanitize-html": "^2.9.4",
     "bun-types": "latest",
-    "@types/cookie-parser": "^1.4.6",
     "esbuild": "^0.19.5"
   },
   "dependencies": {
