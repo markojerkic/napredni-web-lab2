@@ -175,3 +175,5 @@ dist
 .DS_Store
 
 data.json
+data2.json
+is-encripted.json

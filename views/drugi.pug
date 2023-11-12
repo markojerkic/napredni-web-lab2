@@ -1,7 +1,7 @@
 doctype html
 html
     body
-        h1 Prva kategorija - XSS
+        h1 Druga kategorija - Nesigurna pohrana osjetljivih podataka
         hr
 
         script.
@@ -29,12 +29,13 @@ html
             }
 
             function onSelectedSafety() {
-                const isOn = getCookie("SAFETY-OFF")
+                const isOn = getCookie("2SAFETY-OFF")
                 if (isOn === "true") {
-                    setCookie("SAFETY-OFF", "false")
+                    setCookie("2SAFETY-OFF", "false")
                 } else {
-                    setCookie("SAFETY-OFF", "true")
+                    setCookie("2SAFETY-OFF", "true")
                 }
+                setCookie("UPDATE", "TRUE")
                 location.reload()
             }
 
@@ -42,21 +43,9 @@ html
           input(type="checkbox" onclick="onSelectedSafety()" name="safety" checked=safetyOff)
           label(for="safety") Ranjivost uključena
 
-          p
-           b Upute:
-           span Ako je ranjivost uključena, unijeti npr. '
-           code(style="background: gray; color: white; padding: 2px") #" onerror="javascript:alert(document.cookie)" "
-           span ', bez početnog krajnjeg navodnika '. Ako je ranjivost uključena, vrijednost će se spremiti kao običan nesanitiziran text i umetnuti će se u sliku kao nesanitizirani string. Trebao bi se pojaviti alert s cookie popisom.
-           | Inače, ako ranjivost nije uključena, provodi se sanitizacija stringa prilikom spremanja vrijednosti stringa, i prilikom čitanja, tj pisanja u HTML stablo.
-        p Unos lika za sliku prikazanu ispod
-        form(method="POST")
-            input(type="text" placeholder="Unos lika za sliku" name="link" required="true")
-            button(type = "submit") Spremi
-
-        #link
-            if link
-              #safetyOff
-                if safetyOff
-                  img(src!=`${link}` aria-label="Spremljena slika")
-                else
-                  img(src=`${link}` aria-label="Spremljena slika")
+        #data
+          if data
+            each entry in data
+              li
+                b #{entry.key}
+                span  #{entry.value}
