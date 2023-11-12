@@ -1,0 +1,57 @@
+doctype html
+html
+    head
+        link(rel="stylesheet", href="https://cdn.tailwindcss.com")
+    body
+        h1 Prva kategorija - XSS
+        hr
+
+        script.
+            function setCookie(cname, cvalue, exdays) {
+              const d = new Date();
+              d.setTime(d.getTime() + ((exdays ?? 1 )* 24 * 60 * 60 * 1000));
+              let expires = "expires="+d.toUTCString();
+              document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            }
+
+            function getCookie(cname) {
+              let name = cname + "=";
+              let decodedCookie = decodeURIComponent(document.cookie);
+              let ca = decodedCookie.split(';');
+              for(let i = 0; i <ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) == ' ') {
+                  c = c.substring(1);
+                }
+                if (c.indexOf(name) == 0) {
+                  return c.substring(name.length, c.length);
+                }
+              }
+              return "";
+            }
+
+            function onSelectedSafety() {
+                const isOn = getCookie("SAFETY-OFF")
+                if (isOn === "true") {
+                    setCookie("SAFETY-OFF", "false")
+                } else {
+                    setCookie("SAFETY-OFF", "true")
+                }
+                location.reload()
+            }
+
+        div
+          input(type="checkbox" onclick="onSelectedSafety()" name="safety" checked=safetyOff)
+          label(for="safety") Ranjivost uključena
+        p Unos lika za sliku prikazanu ispod
+        form(method="POST")
+            input(type="text" placeholder="Unos lika za sliku" name="link" required="true")
+            button(type = "submit") Spremi
+
+        #link
+            if link
+              #safetyOff
+                if safetyOff
+                  img(src!=`${link}` aria-label="Spremljena slika")
+                else
+                  img(src=`${link}` aria-label="Spremljena slika")
