@@ -43,6 +43,13 @@ html
         div
           input(type="checkbox" onclick="onSelectedSafety()" name="safety" checked=safetyOff)
           label(for="safety") Ranjivost uključena
+
+          p
+           b Upute:
+           span Ako je ranjivost uključena, unijeti npr. '
+           code(style="background: gray; color: white; padding: 2px") #" onerror="javascript:alert(document.cookie)" "
+           span ', bez početnog krajnjeg navodnika '. Ako je ranjivost uključena, vrijednost će se spremiti kao običan nesanitiziran text i umetnuti će se u sliku kao nesanitizirani string. Trebao bi se pojaviti alert s cookie popisom.
+           | Inače, ako ranjivost nije uključena, provodi se sanitizacija stringa prilikom spremanja vrijednosti stringa, i prilikom čitanja, tj pisanja u HTML stablo.
         p Unos lika za sliku prikazanu ispod
         form(method="POST")
             input(type="text" placeholder="Unos lika za sliku" name="link" required="true")
