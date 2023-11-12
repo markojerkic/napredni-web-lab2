@@ -49,7 +49,7 @@ app.get("/prvi", async (req, res) => {
         link,
         safetyOff: unsafe
     });
-})
+});
 
 
 app.listen(3000, () => {

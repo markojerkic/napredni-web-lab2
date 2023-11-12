@@ -3,7 +3,7 @@
   "module": "src/index.ts",
   "scripts": {
     "copy-views": "mkdir -p dist/views/ && cp -r views/ dist/views/",
-    "build": "esbuild index.ts --platform=node --bundle --minify --outfile=dist/index.js && yarn copy-views",
+    "build": "esbuild src/index.ts --platform=node --bundle --minify --outfile=dist/index.js && yarn copy-views",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
     "generate": "drizzle-kit generate:pg"
